@@ -22,12 +22,6 @@ contract CrowdfundingPlatform {
         uint256 duration,
         uint256 initialSupply
     ) external {
-        require(bytes(name).length > 0, "Name required");
-        require(bytes(symbol).length > 0, "Symbol required");
-        require(bytes(description).length > 0, "Description required");
-        require(fundingGoal > 0, "Goal should be > 0");
-        require(duration > 0, "Duration should be > 0");
-
         campaignId.increment();
         uint256 newCampaignId = campaignId.current();
 

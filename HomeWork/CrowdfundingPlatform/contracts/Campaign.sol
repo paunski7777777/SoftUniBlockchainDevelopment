@@ -20,6 +20,7 @@ contract Campaign is ERC20, Ownable {
     uint256 public reward;
     mapping(address => bool) public claimedRewards;
     uint256 previousBalance;
+    bool public isSuccessful;
 
     event UserContributed(address indexed contributor, uint256 amount);
     event ContributorRefunded(address indexed contributor, uint256 amount);
@@ -40,6 +41,7 @@ contract Campaign is ERC20, Ownable {
         require(bytes(_description).length > 0, "Description required");
         require(_fundingGoal > 0, "Goal > 0");
         require(_duration > 0, "Duration > 0");
+        require(_initialSupply > 0, "Initial supply > 0");
 
         id = _id;
         description = _description;
@@ -84,6 +86,7 @@ contract Campaign is ERC20, Ownable {
         require(balance == fundingGoal, "Balance = funding goal");
 
         previousBalance = balance;
+        isSuccessful = true;
 
         balance = 0;
 
@@ -101,14 +104,15 @@ contract Campaign is ERC20, Ownable {
         contributors[msg.sender] = 0;
         balance -= contribution;
 
+        emit ContributorRefunded(msg.sender, contribution);
+
         (bool success, ) = payable(msg.sender).call{value: contribution}("");
 
         require(success, "Refund failed");
-
-        emit ContributorRefunded(msg.sender, contribution);
     }
 
     function rewardDistribution(uint256 amount) external onlyOwner {
+        require(isSuccessful, "Campaign unsuccessfull");
         require(reward == 0, "Reward distributed");
         require(amount > 0, "Amount > 0");
         require(amount <= totalSupply(), "Amount <= total supply");
